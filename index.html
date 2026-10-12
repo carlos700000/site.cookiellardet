@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Cookillardet · journal de dégustation de cookies</title>
+  <meta name="description" content="Tous les cookies goûtés, photographiés, notés et commentés. Laisse ton avis !">
+  <meta property="og:title" content="Cookillardet">
+  <meta property="og:description" content="Le journal de dégustation de cookies le plus impartial du monde.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍪</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="wrap hero">
+    <h1>Cookillardet<span class="dot">.</span></h1>
+    <p>Le journal de dégustation de cookies le plus impartial du monde. Chaque cookie goûté est pris en photo, noté et commenté.</p>
+    <div class="stats" id="stats"></div>
+    <div class="demo-banner" id="demoBanner" hidden>
+      Aperçu : la base de données n'est pas encore branchée, les commentaires sont désactivés.
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section id="podiumSection" hidden>
+      <h2 class="section-title">Le podium <small>les mieux notés</small></h2>
+      <div class="podium" id="podium"></div>
+    </section>
+
+    <h2 class="section-title">Tous les cookies</h2>
+    <div class="toolbar">
+      <label class="search">
+        <input class="input" id="search" type="search" placeholder="Chercher un cookie, une ville, un mot…" aria-label="Rechercher">
+      </label>
+      <select class="select" id="sort" aria-label="Trier">
+        <option value="recent">Les plus récents</option>
+        <option value="best">Les mieux notés</option>
+        <option value="worst">Les pires</option>
+        <option value="talked">Les plus commentés</option>
+      </select>
+      <div class="count" id="count"></div>
+    </div>
+    <div class="grid" id="grid"></div>
+    <div class="empty" id="empty" hidden>
+      <h2>Aucun cookie trouvé</h2>
+      <p>Essaie une autre recherche.</p>
+    </div>
+  </main>
+
+  <footer class="site-footer wrap">
+    🍪 Cookillardet · <a href="admin.html">Espace auteur</a>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/anciens-avis.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
