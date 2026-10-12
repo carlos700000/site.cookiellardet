@@ -219,6 +219,28 @@
       return wrap;
     }
 
+    // Photos retrouvées après l'import : on propose de les associer aux anciens avis encore sans photo
+    const used = usedPhotos();
+    const recovered = (window.ANCIENS_AVIS || [])
+      .filter(a => a.photo && !used.has(legacyPhotoUrl(a.photo)))
+      .map(a => ({ review: reviews.find(r => r.num === a.num && !r.photo_url), url: legacyPhotoUrl(a.photo) }))
+      .filter(x => x.review);
+    if (recovered.length) {
+      const btn = el("button", { class: "btn btn-primary", text: "Ajouter les " + recovered.length + " photos" });
+      btn.addEventListener("click", async () => {
+        btn.disabled = true; btn.textContent = "Ajout en cours…";
+        try {
+          for (const { review, url } of recovered) Object.assign(review, await api.saveReview({ id: review.id, photo_url: url }));
+          toast(recovered.length + " photos ajoutées !");
+          renderDashboard();
+        } catch (err) { toast("Erreur : " + err.message, "error"); btn.disabled = false; }
+      });
+      wrap.append(el("div", { class: "notice stack" },
+        el("b", { text: "📸 " + recovered.length + " photos retrouvées" }),
+        el("span", { text: "Pour : " + recovered.map(x => x.review.title).join(", ") + "." }),
+        el("div", {}, btn)));
+    }
+
     const missing = reviews.filter(r => !r.photo_url).length;
     const search = el("input", { class: "input", type: "search", placeholder: "Filtrer mes avis…" });
     const onlyMissing = el("input", { type: "checkbox" });
