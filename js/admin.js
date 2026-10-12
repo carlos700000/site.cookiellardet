@@ -56,6 +56,17 @@
     async importLegacy(rows) {
       const { error } = await sb.from("reviews").insert(rows);
       if (error) throw error;
+    },
+    async listHidden() {
+      const { data, error } = await sb.from("photos_masquees").select("url");
+      if (error) return []; // table pas encore créée : rien de masqué
+      return data.map(d => d.url);
+    },
+    async hidePhoto(url) {
+      const { error } = await sb.from("photos_masquees").insert({ url });
+      if (error) throw new Error(error.code === "42P01" || /photos_masquees/.test(error.message)
+        ? "Exécute d'abord le bloc « photos_masquees » de supabase/schema.sql dans Supabase."
+        : error.message);
     }
   };
 
@@ -82,7 +93,9 @@
     async uploadPhoto(blob) { return URL.createObjectURL(blob); },
     async listComments() { return memory.comments; },
     async deleteComment(id) { memory.comments = memory.comments.filter(c => c.id !== id); },
-    async importLegacy(rows) { for (const r of rows) await demoApi.saveReview(r); }
+    async importLegacy(rows) { for (const r of rows) await demoApi.saveReview(r); },
+    async listHidden() { return memory.hidden || []; },
+    async hidePhoto(url) { (memory.hidden = memory.hidden || []).push(url); }
   };
 
   const api = configured ? supabaseApi : demoApi;
@@ -92,12 +105,13 @@
   // ════════════════════════════════════════════════════════════
   let reviews = [];
   let comments = [];
+  let hidden = new Set(); // anciennes photos supprimées de « Photos à trier »
   let tab = "avis";
   let user = null;
 
   const legacyUrls = Array.from({ length: window.ANCIENNES_PHOTOS || 0 }, (_, i) => legacyPhotoUrl(i + 1));
   const usedPhotos = () => new Map(reviews.filter(r => r.photo_url).map(r => [r.photo_url, r]));
-  const unusedLegacy = () => { const used = usedPhotos(); return legacyUrls.filter(u => !used.has(u)); };
+  const unusedLegacy = () => { const used = usedPhotos(); return legacyUrls.filter(u => !used.has(u) && !hidden.has(u)); };
   const nextNum = () => reviews.reduce((m, r) => Math.max(m, r.num || 0), 0) + 1;
 
   // ════════════════════════════════════════════════════════════
@@ -154,7 +168,9 @@
 
   async function refresh() {
     try {
-      [reviews, comments] = await Promise.all([api.listReviews(), api.listComments()]);
+      let hiddenList;
+      [reviews, comments, hiddenList] = await Promise.all([api.listReviews(), api.listComments(), api.listHidden()]);
+      hidden = new Set(hiddenList);
     } catch (err) {
       toast("Erreur de chargement : " + err.message, "error");
     }
@@ -294,13 +310,27 @@
       return el("div", { class: "panel" }, el("h2", { text: "Tout est trié 🎉" }), el("p", { class: "lead", text: "Toutes les anciennes photos sont associées à un avis." }));
     }
     return el("div", { class: "stack" },
-      el("p", { class: "lead", text: "Ces anciennes photos n'ont pas encore d'avis. Touche une photo pour l'associer à un avis existant ou créer un nouvel avis." }),
+      el("p", { class: "lead", text: "Ces anciennes photos n'ont pas encore d'avis. Touche une photo pour l'associer à un avis existant ou créer un nouvel avis. La 🗑 retire une photo dont tu ne veux pas." }),
       el("div", { class: "photo-grid" }, unused.map(url =>
-        el("button", { class: "photo-tile", onclick: () => sortPhoto(url) },
-          el("img", { src: url, alt: "", loading: "lazy" }),
-          el("span", { class: "tag", text: "#" + url.match(/(\d+)\.jpg$/)[1] }))
+        el("div", { class: "photo-cell" },
+          el("button", { class: "photo-tile", onclick: () => sortPhoto(url) },
+            el("img", { src: url, alt: "", loading: "lazy" }),
+            el("span", { class: "tag", text: "#" + url.match(/(\d+)\.jpg$/)[1] })),
+          el("button", { class: "photo-del", title: "Supprimer cette photo", "aria-label": "Supprimer cette photo", onclick: () => deletePhoto(url) }, "🗑"))
       ))
     );
+  }
+
+  async function deletePhoto(url, after) {
+    if (!(await confirmBox("Supprimer définitivement cette photo de « Photos à trier » ?", "Supprimer"))) return false;
+    try {
+      await api.hidePhoto(url);
+      hidden.add(url);
+      toast("Photo supprimée.");
+      if (after) after();
+      renderDashboard();
+      return true;
+    } catch (err) { toast(err.message, "error"); return false; }
   }
 
   function sortPhoto(url) {
@@ -321,7 +351,9 @@
       preview,
       el("div", { class: "editor-foot" },
         el("button", { class: "btn btn-ghost", onclick: () => { m.close(); openEditor(null, url); } }, "＋ Nouvel avis avec cette photo"),
-        assign)
+        assign),
+      el("div", { class: "editor-foot", style: "justify-content:center" },
+        el("button", { class: "btn btn-danger btn-sm", onclick: () => deletePhoto(url, () => m.close()) }, "🗑 Supprimer cette photo"))
     ), "picker-sheet");
     assign.addEventListener("click", async () => {
       const r = reviews.find(x => x.id === select.value);
@@ -523,7 +555,7 @@
   // Choix d'une ancienne photo (photos non utilisées d'abord)
   function pickLegacy(onPick, current) {
     const used = usedPhotos();
-    const sorted = legacyUrls.slice().sort((a, b) => (used.has(a) ? 1 : 0) - (used.has(b) ? 1 : 0));
+    const sorted = legacyUrls.filter(u => !hidden.has(u)).sort((a, b) => (used.has(a) ? 1 : 0) - (used.has(b) ? 1 : 0));
     const m = modal(el("div", { class: "stack" },
       el("h2", { text: "Anciennes photos", style: "font-family:var(--ff-display);margin:0" }),
       el("p", { class: "lead", style: "margin:0", text: "Les photos grisées sont déjà utilisées par un autre avis." }),

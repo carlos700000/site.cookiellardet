@@ -82,6 +82,16 @@ create policy "admin envoie des photos" on storage.objects
 create policy "admin supprime des photos" on storage.objects
   for delete using (bucket_id = 'photos' and public.is_admin());
 
+-- ── Anciennes photos supprimées de « Photos à trier » ────────
+create table if not exists public.photos_masquees (
+  url        text primary key,
+  created_at timestamptz not null default now()
+);
+alter table public.photos_masquees enable row level security;
+drop policy if exists "admin gère les photos masquées" on public.photos_masquees;
+create policy "admin gère les photos masquées" on public.photos_masquees
+  for all using (public.is_admin()) with check (public.is_admin());
+
 -- ============================================================
 --  ÉTAPE SUIVANTE, dans une NOUVELLE requête (pas ici) :
 --  après avoir créé le compte de ton pote (Authentication > Users > Add user),
