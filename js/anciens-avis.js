@@ -5,7 +5,7 @@
 // `photo` = numéro de la photo dans photos/anciennes/ (null = à associer depuis l'admin).
 // Notes d'origine « 3,5/10 » (n°16) et « 4,5/10 » (n°46) ramenées sur 5 : à vérifier.
 
-window.ANCIENNES_PHOTOS = 97;
+window.ANCIENNES_PHOTOS = 110; // 098 → 110 : nouvelle bibliothèque (oct. 2026), doublons écartés
 
 window.ANCIENS_AVIS = [
   { num: 1, title: "Cookie Giraudon", place: "Monoprix, Marseille", rating: 4.1, photo: 40,
