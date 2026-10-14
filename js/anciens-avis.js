@@ -11,6 +11,8 @@ window.ANCIENNES_PHOTOS = 110; // 098 → 110 : nouvelle bibliothèque (oct. 202
 window.HORS_BIBLIOTHEQUE = [12, 13, 24, 75];
 // Les photos supprimées de « Photos à trier » avant cette date sont réaffichées.
 window.BIBLIOTHEQUE_DEPUIS = "2026-10-14T13:30:00Z";
+// Ordre de la pellicule « Cookie » du téléphone, de la plus ancienne à la plus récente (n° des photos).
+window.ORDRE_TELEPHONE = [82, 83, 43, 44, 84, 85, 86, 45, 46, 87, 40, 47, 64, 41, 48, 66, 67, 68, 69, 88, 60, 89, 76, 42, 61, 77, 90, 78, 79, 80, 81, 65, 70, 71, 109, 72, 73, 74, 110, 49, 50, 91, 92, 93, 94, 95, 96, 97, 62, 63, 51, 52, 53, 54, 108, 55, 56, 57, 58, 59, 36, 37, 38, 39, 34, 35, 31, 32, 33, 107, 23, 25, 26, 27, 28, 29, 30, 104, 105, 14, 15, 16, 106, 17, 18, 19, 20, 21, 22, 11, 103, 8, 9, 10, 5, 6, 7, 1, 2, 3, 4, 99, 100, 101, 102, 98];
 
 window.ANCIENS_AVIS = [
   { num: 1, title: "Cookie Giraudon", place: "Monoprix, Marseille", rating: 4.1, photo: 40,

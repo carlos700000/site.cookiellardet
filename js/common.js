@@ -36,6 +36,18 @@
     return r.photo_url ? [{ photo_url: r.photo_url, name: null, rating: null, body: "" }] : [];
   }
   const cookieCount = r => Math.max(1, cookiesOf(r).length);
+
+  // Rang d'une photo dans la pellicule du téléphone (plus grand = plus récent).
+  // Photo envoyée depuis l'espace auteur : plus récente que toute la pellicule. Inconnue : -1.
+  const phoneRank = new Map((window.ORDRE_TELEPHONE || []).map((n, i) => [legacyPhotoUrl(n), i]));
+  function photoRank(url) {
+    if (!url) return -1;
+    if (phoneRank.has(url)) return phoneRank.get(url);
+    return url.startsWith("photos/anciennes/") ? -1 : 1e6;
+  }
+  // Une enseigne est aussi récente que sa photo de cookie la plus récente
+  const recency = r => Math.max(photoRank(r.photo_url), ...cookiesOf(r).map(c => photoRank(c.photo_url)));
+  const byRecent = (a, b) => recency(b) - recency(a) || String(b.created_at || "").localeCompare(String(a.created_at || "")) || b.num - a.num;
   const plural = (n, one, many) => n + " " + (n > 1 ? many : one);
 
   function el(tag, attrs, ...children) {
@@ -112,5 +124,5 @@
   function lsGet(k) { try { return localStorage.getItem(k); } catch { return null; } }
   function lsSet(k, v) { try { localStorage.setItem(k, v); } catch {} }
 
-  window.CK = { sb, configured, legacyPhotoUrl, demoReviews, cookiesOf, cookieCount, plural, el, fmtRating, ratingBar, ratingTone, fmtDate, timeAgo, mapsUrl, toast, lsGet, lsSet };
+  window.CK = { sb, configured, legacyPhotoUrl, demoReviews, cookiesOf, cookieCount, plural, photoRank, byRecent, el, fmtRating, ratingBar, ratingTone, fmtDate, timeAgo, mapsUrl, toast, lsGet, lsSet };
 })();
