@@ -355,3 +355,5 @@ button.cookie-thumb { cursor: zoom-in; }
   .stat { min-width: 0; flex: 1 1 30%; padding: 8px 10px; }
   .stat b { font-size: 1.3rem; }
 }
+
+.stats-link { margin-top: 6px; }
