@@ -244,25 +244,22 @@
       return wrap;
     }
 
-    // Photos retrouvées après l'import : on propose de les associer aux anciens avis encore sans photo
-    const used = usedPhotos();
-    const recovered = (window.ANCIENS_AVIS || [])
-      .filter(a => a.photo && !used.has(legacyPhotoUrl(a.photo)))
-      .map(a => ({ review: reviews.find(r => r.num === a.num && !r.photo_url), url: legacyPhotoUrl(a.photo) }))
-      .filter(x => x.review);
-    if (recovered.length) {
-      const btn = el("button", { class: "btn btn-primary", text: "Ajouter les " + recovered.length + " photos" });
+    // Renumérotation : n° 1 = enseigne tout en bas de la liste, n° le plus grand = tout en haut
+    const ordered = reviews.slice().sort(byRecent);
+    const renum = ordered.map((r, i) => ({ r, num: ordered.length - i })).filter(x => x.r.num !== x.num);
+    if (renum.length) {
+      const btn = el("button", { class: "btn btn-primary", text: "Renuméroter les " + ordered.length + " enseignes" });
       btn.addEventListener("click", async () => {
-        btn.disabled = true; btn.textContent = "Ajout en cours…";
+        btn.disabled = true; btn.textContent = "Renumérotation en cours…";
         try {
-          for (const { review, url } of recovered) Object.assign(review, await api.saveReview({ id: review.id, photo_url: url }));
-          toast(recovered.length + " photos ajoutées !");
+          for (const { r, num } of renum) Object.assign(r, await api.saveReview({ id: r.id, num }));
+          toast("Enseignes renumérotées de 1 à " + ordered.length + " !");
           renderDashboard();
-        } catch (err) { toast("Erreur : " + err.message, "error"); btn.disabled = false; }
+        } catch (err) { toast("Erreur : " + err.message, "error"); btn.disabled = false; btn.textContent = "Réessayer"; }
       });
       wrap.append(el("div", { class: "notice stack" },
-        el("b", { text: "📸 " + recovered.length + " photos retrouvées" }),
-        el("span", { text: "Pour : " + recovered.map(x => x.review.title).join(", ") + "." }),
+        el("b", { text: "🔢 Numéros dans l'ordre de la liste" }),
+        el("span", { text: "Sans changer l'ordre, l'enseigne tout en bas devient le n° 1 et celle tout en haut le n° " + ordered.length + "." }),
         el("div", {}, btn)));
     }
 
