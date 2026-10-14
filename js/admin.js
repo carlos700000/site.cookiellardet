@@ -61,12 +61,14 @@
       if (error) throw error;
     },
     async listHidden() {
-      const { data, error } = await sb.from("photos_masquees").select("url");
+      // Les photos supprimées avant l'arrivée de la bibliothèque complète (IMG_1713) sont réaffichées
+      const { data, error } = await sb.from("photos_masquees").select("url").gte("created_at", window.BIBLIOTHEQUE_DEPUIS || "1970-01-01");
       if (error) return []; // table pas encore créée : rien de masqué
       return data.map(d => d.url);
     },
     async hidePhoto(url) {
-      const { error } = await sb.from("photos_masquees").insert({ url });
+      // upsert : une photo déjà masquée avant BIBLIOTHEQUE_DEPUIS est re-datée pour compter à nouveau
+      const { error } = await sb.from("photos_masquees").upsert({ url, created_at: new Date().toISOString() });
       if (error) throw new Error(error.code === "42P01" || /photos_masquees/.test(error.message)
         ? "Exécute d'abord le bloc « photos_masquees » de supabase/schema.sql dans Supabase."
         : error.message);
@@ -112,7 +114,8 @@
   let tab = "avis";
   let user = null;
 
-  const legacyUrls = Array.from({ length: window.ANCIENNES_PHOTOS || 0 }, (_, i) => legacyPhotoUrl(i + 1));
+  const legacyUrls = Array.from({ length: window.ANCIENNES_PHOTOS || 0 }, (_, i) => i + 1)
+    .filter(n => !(window.HORS_BIBLIOTHEQUE || []).includes(n)).map(legacyPhotoUrl);
   const usedPhotos = () => new Map(reviews.flatMap(r =>
     [r.photo_url, ...cookiesOf(r).map(c => c.photo_url)].filter(Boolean).map(u => [u, r])));
   const unusedLegacy = () => { const used = usedPhotos(); return legacyUrls.filter(u => !used.has(u) && !hidden.has(u)); };

@@ -6,6 +6,11 @@
 // Notes d'origine « 3,5/10 » (n°16) et « 4,5/10 » (n°46) ramenées sur 5 : à vérifier.
 
 window.ANCIENNES_PHOTOS = 110; // 098 → 110 : nouvelle bibliothèque (oct. 2026), doublons écartés
+// La bibliothèque IMG_1713 (106 photos) = 001 → 110 sauf ces 4 anciennes photos, absentes du PDF
+// (une capture d'écran et 3 autres prises de cookies déjà présents). Elles restent dans les avis qui les utilisent.
+window.HORS_BIBLIOTHEQUE = [12, 13, 24, 75];
+// Les photos supprimées de « Photos à trier » avant cette date sont réaffichées.
+window.BIBLIOTHEQUE_DEPUIS = "2026-10-14T13:30:00Z";
 
 window.ANCIENS_AVIS = [
   { num: 1, title: "Cookie Giraudon", place: "Monoprix, Marseille", rating: 4.1, photo: 40,
