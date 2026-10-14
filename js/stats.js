@@ -115,15 +115,7 @@
     // 4. Les notes au fil des dégustations
     if (rated.length >= 2) charts.push(card("Les notes au fil des dégustations", "Chaque point est une enseigne, du n° 1 au plus récent. La ligne suit la moyenne des 5 dernières.", timeline(rated)));
 
-    // 5. Note par cookie goûté (cookies notés séparément)
-    const cookieNotes = reviews.flatMap(r => (r.cookies || []).filter(c => c.rating != null).map(c => Number(c.rating)));
-    if (cookieNotes.length >= 3) {
-      const b2 = Array.from({ length: 10 }, (_, i) => ({ from: i / 2, n: 0 }));
-      for (const n of cookieNotes) b2[Math.min(9, Math.floor(n * 2))].n++;
-      charts.push(card("Notes des cookies", plural(cookieNotes.length, "cookie noté à part", "cookies notés à part"), histogram(b2)));
-    }
-
-    // 6. Top et flop
+    // 5. Top et flop
     const link = r => el("a", { class: "rank-item", href: "index.html#avis-" + r.id, "data-tone": ratingTone(r.rating) },
       el("span", { class: "rank-num", text: "N° " + r.num }), el("span", { class: "rank-title", text: r.title }),
       el("b", { class: "rank-note", text: fmtRating(r.rating) }));
