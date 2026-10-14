@@ -1,6 +1,6 @@
 // Site public : liste des avis, fiche détaillée et commentaires des visiteurs.
 (function () {
-  const { sb, configured, cookiesOf, cookieCount, plural, el, ratingBar, ratingTone, fmtRating, fmtDate, timeAgo, mapsUrl, toast, lsGet, lsSet } = window.CK;
+  const { sb, configured, cookiesOf, cookieCount, plural, byRecent, el, ratingBar, ratingTone, fmtRating, fmtDate, timeAgo, mapsUrl, toast, lsGet, lsSet } = window.CK;
 
   let reviews = [];
   const $ = id => document.getElementById(id);
@@ -74,7 +74,7 @@
     if (sort === "best") list.sort((a, b) => byRating(a, b) || b.num - a.num);
     else if (sort === "worst") list.sort((a, b) => (a.rating ?? 99) - (b.rating ?? 99) || b.num - a.num);
     else if (sort === "talked") list.sort((a, b) => commentCount(b) - commentCount(a) || b.num - a.num);
-    else list.sort((a, b) => b.num - a.num);
+    else list.sort(byRecent);
     return list;
   }
 

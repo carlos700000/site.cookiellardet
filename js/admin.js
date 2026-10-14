@@ -1,6 +1,6 @@
 // Espace auteur : connexion, ajout / modification des avis, photothèque, modération.
 (function () {
-  const { sb, configured, cookiesOf, cookieCount, plural, el, ratingBar, ratingTone, fmtRating, timeAgo, toast, legacyPhotoUrl } = window.CK;
+  const { sb, configured, cookiesOf, cookieCount, plural, photoRank, byRecent, el, ratingBar, ratingTone, fmtRating, timeAgo, toast, legacyPhotoUrl } = window.CK;
   const app = document.getElementById("app");
   const topActions = document.getElementById("topActions");
   const photoFile = document.getElementById("photoFile");
@@ -118,7 +118,7 @@
     .filter(n => !(window.HORS_BIBLIOTHEQUE || []).includes(n)).map(legacyPhotoUrl);
   const usedPhotos = () => new Map(reviews.flatMap(r =>
     [r.photo_url, ...cookiesOf(r).map(c => c.photo_url)].filter(Boolean).map(u => [u, r])));
-  const unusedLegacy = () => { const used = usedPhotos(); return legacyUrls.filter(u => !used.has(u) && !hidden.has(u)); };
+  const unusedLegacy = () => { const used = usedPhotos(); return legacyUrls.filter(u => !used.has(u) && !hidden.has(u)).sort((a, b) => photoRank(b) - photoRank(a)); };
   const nextNum = () => reviews.reduce((m, r) => Math.max(m, r.num || 0), 0) + 1;
 
   // ════════════════════════════════════════════════════════════
@@ -273,7 +273,7 @@
 
     const draw = () => {
       const q = search.value.trim().toLowerCase();
-      const items = reviews.filter(r =>
+      const items = reviews.slice().sort(byRecent).filter(r =>
         (!q || (r.title + " " + (r.place || "") + " " + r.num).toLowerCase().includes(q)) &&
         (!onlyMissing.checked || !r.photo_url));
       list.replaceChildren(...items.map(reviewRow));
