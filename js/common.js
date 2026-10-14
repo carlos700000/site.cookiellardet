@@ -22,11 +22,21 @@
         body: a.body,
         photo_url: a.photo ? legacyPhotoUrl(a.photo) : null,
         tasted_on: null,
+        cookies: [],
         published: true,
         created_at: new Date(2025, 0, a.num).toISOString(),
         comments: [{ count: 0 }]
       }));
   }
+
+  // Cookies testés dans une enseigne. Les anciens avis n'ont qu'une photo (photo_url) :
+  // ils comptent comme un seul cookie.
+  function cookiesOf(r) {
+    if (Array.isArray(r.cookies) && r.cookies.length) return r.cookies;
+    return r.photo_url ? [{ photo_url: r.photo_url, name: null, rating: null, body: "" }] : [];
+  }
+  const cookieCount = r => Math.max(1, cookiesOf(r).length);
+  const plural = (n, one, many) => n + " " + (n > 1 ? many : one);
 
   function el(tag, attrs, ...children) {
     const e = document.createElement(tag);
@@ -102,5 +112,5 @@
   function lsGet(k) { try { return localStorage.getItem(k); } catch { return null; } }
   function lsSet(k, v) { try { localStorage.setItem(k, v); } catch {} }
 
-  window.CK = { sb, configured, legacyPhotoUrl, demoReviews, el, fmtRating, ratingBar, ratingTone, fmtDate, timeAgo, mapsUrl, toast, lsGet, lsSet };
+  window.CK = { sb, configured, legacyPhotoUrl, demoReviews, cookiesOf, cookieCount, plural, el, fmtRating, ratingBar, ratingTone, fmtDate, timeAgo, mapsUrl, toast, lsGet, lsSet };
 })();

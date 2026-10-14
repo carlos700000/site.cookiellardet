@@ -102,6 +102,13 @@
 .editor-foot { display: flex; gap: 10px; justify-content: space-between; flex-wrap: wrap; align-items: center; margin-top: 4px; }
 .editor-foot .right { display: flex; gap: 10px; margin-left: auto; }
 
+/* Cookies d'une enseigne */
+.editor-sub { font-family: var(--ff-display); font-size: 1.3rem; margin: 10px 0 0; padding-top: 14px; border-top: 1px solid var(--border); }
+.cookie-edit { border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; background: var(--bg); display: grid; gap: 12px; }
+.cookie-edit-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; min-height: 36px; }
+.cookie-edit .editor { grid-template-columns: minmax(0, 220px) minmax(0, 1fr); }
+.cookie-edit .textarea { min-height: 80px; }
+
 /* Fenêtre de choix de photo */
 .picker-sheet { max-width: 900px; }
 .picker-sheet .sheet-body { padding-top: 24px; }
@@ -114,7 +121,7 @@
 .progress > div { height: 100%; width: 0; background: var(--accent); transition: width .2s; }
 
 @media (max-width: 720px) {
-  .editor { grid-template-columns: 1fr; }
+  .editor, .cookie-edit .editor { grid-template-columns: 1fr; }
   .photo-drop { aspect-ratio: 4 / 3; }
   .two { grid-template-columns: 1fr; }
   .row-actions .btn-label { display: none; }

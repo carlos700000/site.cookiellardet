@@ -1,6 +1,6 @@
 // Site public : liste des avis, fiche détaillée et commentaires des visiteurs.
 (function () {
-  const { sb, configured, el, ratingBar, ratingTone, fmtRating, fmtDate, timeAgo, mapsUrl, toast, lsGet, lsSet } = window.CK;
+  const { sb, configured, cookiesOf, cookieCount, plural, el, ratingBar, ratingTone, fmtRating, fmtDate, timeAgo, mapsUrl, toast, lsGet, lsSet } = window.CK;
 
   let reviews = [];
   const $ = id => document.getElementById(id);
@@ -15,7 +15,7 @@
     }
     const { data, error } = await sb
       .from("reviews")
-      .select("id, num, title, place, rating, body, photo_url, tasted_on, created_at, comments(count)")
+      .select("*, comments(count)")
       .eq("published", true)
       .order("num", { ascending: false });
     if (error) {
@@ -34,8 +34,10 @@
     const rated = reviews.filter(r => r.rating != null);
     const avg = rated.length ? rated.reduce((s, r) => s + Number(r.rating), 0) / rated.length : null;
     const comments = reviews.reduce((s, r) => s + commentCount(r), 0);
+    const cookies = reviews.reduce((s, r) => s + cookieCount(r), 0);
     const items = [
-      [reviews.length, "cookies goûtés"],
+      [reviews.length, reviews.length > 1 ? "enseignes testées" : "enseigne testée"],
+      [cookies, cookies > 1 ? "cookies goûtés" : "cookie goûté"],
       [avg == null ? "–" : fmtRating(Math.round(avg * 10) / 10), "note moyenne"],
       [rated.filter(r => r.rating >= 4.5).length, "high level"],
     ];
@@ -66,7 +68,7 @@
 
   function filtered() {
     const q = normalize($("search").value.trim());
-    let list = reviews.filter(r => !q || normalize([r.title, r.place, r.body, "n°" + r.num].join(" ")).includes(q));
+    let list = reviews.filter(r => !q || normalize([r.title, r.place, r.body, "n°" + r.num, ...cookiesOf(r).map(c => (c.name || "") + " " + (c.body || ""))].join(" ")).includes(q));
     const sort = $("sort").value;
     const byRating = (a, b) => (b.rating ?? -1) - (a.rating ?? -1);
     if (sort === "best") list.sort((a, b) => byRating(a, b) || b.num - a.num);
@@ -83,11 +85,13 @@
 
   function card(r) {
     const n = commentCount(r);
+    const nc = cookieCount(r);
     return el("button", { class: "card", "data-tone": ratingTone(r.rating), onclick: () => openReview(r.id) },
       el("div", { class: "card-photo" },
         photoOrPlaceholder(r),
         el("span", { class: "card-num", text: "N° " + r.num }),
-        r.rating != null && el("span", { class: "card-score", text: fmtRating(r.rating) })
+        r.rating != null && el("span", { class: "card-score", text: fmtRating(r.rating) }),
+        nc > 1 && el("span", { class: "card-cookies", text: "🍪 × " + nc })
       ),
       el("div", { class: "card-body" },
         el("h3", { text: r.title }),
@@ -105,9 +109,9 @@
     const list = filtered();
     $("grid").replaceChildren(...list.map(card));
     $("empty").hidden = list.length > 0;
-    $("count").textContent = list.length === reviews.length
-      ? reviews.length + " cookies au compteur"
-      : list.length + " sur " + reviews.length + " cookies";
+    const cookies = list.reduce((s, r) => s + cookieCount(r), 0);
+    $("count").textContent = (list.length === reviews.length ? "" : list.length + " sur ")
+      + plural(reviews.length, "enseigne", "enseignes") + " · " + plural(cookies, "cookie", "cookies") + " goûté" + (cookies > 1 ? "s" : "");
   }
 
   function render() {
@@ -141,17 +145,19 @@
     if (overlay) overlay.remove();
 
     const commentsBox = el("section", { class: "comments" });
+    const cookies = cookiesOf(r);
+    const mainPhoto = r.photo_url ? el("img", { src: r.photo_url, alt: "Photo du cookie " + r.title }) : null;
     const sheet = el("article", { class: "sheet", "data-tone": ratingTone(r.rating), role: "dialog", "aria-modal": "true", "aria-label": r.title },
       el("button", { class: "sheet-close", "aria-label": "Fermer", onclick: closeReview, text: "×" }),
-      el("div", { class: "sheet-photo" }, r.photo_url
-        ? el("img", { src: r.photo_url, alt: "Photo du cookie " + r.title })
-        : el("div", { class: "placeholder" }, el("span", { class: "ph-icon", text: "🍪" }), "Pas de photo")),
+      el("div", { class: "sheet-photo" }, mainPhoto
+        || el("div", { class: "placeholder" }, el("span", { class: "ph-icon", text: "🍪" }), "Pas de photo")),
       el("div", { class: "sheet-body" },
-        el("div", { class: "sheet-kicker", text: "Cookie n° " + r.num + (r.tasted_on ? " · goûté le " + fmtDate(r.tasted_on) : "") }),
+        el("div", { class: "sheet-kicker", text: "N° " + r.num + " · " + plural(cookieCount(r), "cookie goûté", "cookies goûtés") + (r.tasted_on ? " · le " + fmtDate(r.tasted_on) : "") }),
         el("h2", { text: r.title }),
         r.place && el("a", { class: "place-link", href: mapsUrl(r.place), target: "_blank", rel: "noopener" }, "📍 ", r.place),
-        el("div", { class: "verdict" }, el("span", { text: "Verdict" }), ratingBar(r.rating, "lg")),
+        el("div", { class: "verdict" }, el("span", { text: "Note de l'enseigne" }), ratingBar(r.rating, "lg")),
         el("p", { class: "review-text", text: r.body }),
+        cookieList(cookies, mainPhoto),
         el("div", { class: "share" },
           el("button", { class: "btn btn-ghost btn-sm", onclick: () => share(r) }, "🔗 Partager ce cookie")),
         commentsBox
@@ -164,6 +170,27 @@
     overlay.scrollTop = 0;
     sheet.querySelector(".sheet-close").focus();
     renderComments(r, commentsBox);
+  }
+
+  // Les cookies testés dans l'enseigne, chacun avec sa photo, sa note et son avis
+  function cookieList(cookies, mainPhoto) {
+    const detailed = cookies.some(c => c.name || c.rating != null || c.body);
+    if (cookies.length < 2 && !detailed) return null;
+    return el("section", { class: "cookie-list" },
+      el("h3", { text: "Les cookies goûtés (" + cookies.length + ")" }),
+      el("ol", {}, cookies.map((c, i) => el("li", { class: "cookie-item", "data-tone": ratingTone(c.rating) },
+        c.photo_url
+          ? el("button", { class: "cookie-thumb", "aria-label": "Voir la photo", onclick: () => {
+              if (mainPhoto) { mainPhoto.src = c.photo_url; mainPhoto.scrollIntoView({ behavior: "smooth", block: "start" }); }
+            } }, el("img", { src: c.photo_url, alt: "", loading: "lazy" }))
+          : el("div", { class: "cookie-thumb", text: "🍪" }),
+        el("div", { class: "cookie-info" },
+          el("b", { text: c.name || "Cookie n° " + (i + 1) }),
+          c.rating != null && ratingBar(c.rating),
+          c.body && el("p", { text: c.body })
+        )
+      )))
+    );
   }
 
   async function share(r) {

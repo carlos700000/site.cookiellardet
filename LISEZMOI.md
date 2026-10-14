@@ -71,12 +71,20 @@ Pour une mise à jour du code : **Add file → Upload files** avec le fichier mo
 
 ---
 
+## Mise à jour : plusieurs cookies par enseigne
+
+Chaque avis est maintenant une **enseigne** : une note globale + un avis sur l'enseigne, et la liste des **cookies goûtés**, chacun avec sa photo, sa note et son avis. Le site affiche le nombre d'enseignes testées et de cookies goûtés.
+
+Pour l'activer sur une base déjà en place : **SQL Editor → New query** → recoller tout `supabase/schema.sql` → **Run** (rien n'est effacé, ça ajoute juste la colonne `cookies`). Les anciens avis continuent de s'afficher tels quels : leur photo compte comme un cookie goûté.
+
+---
+
 ## Utilisation au quotidien (pour le pote)
 
-Sur le téléphone, ouvrir `admin.html` (l'ajouter à l'écran d'accueil) → **+ Nouvel avis** :
+Sur le téléphone, ouvrir `admin.html` (l'ajouter à l'écran d'accueil) → **+ Nouvelle enseigne** :
 
-- **📷 Ajouter une photo** : ouvre l'appareil photo ou la galerie (la photo est réduite automatiquement avant l'envoi) ;
-- nom, lieu, note avec le curseur (ou « Pas de note »), avis ;
+- nom de l'enseigne, lieu, **note globale** avec le curseur (ou « Pas de note »), avis sur l'enseigne ;
+- pour chaque cookie goûté : **📷 Photo** (appareil photo ou galerie, réduite automatiquement avant l'envoi), nom du cookie, note et avis ; **＋ Ajouter un cookie** pour en mettre plusieurs ;
 - **Publier l'avis**. C'est en ligne.
 
 Tout se modifie ensuite via **Modifier** (texte, note, photo, brouillon/visible, suppression). L'onglet **Commentaires** permet de supprimer ceux qui dépassent les bornes.
