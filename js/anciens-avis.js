@@ -12,8 +12,14 @@ window.HORS_BIBLIOTHEQUE = [12, 13, 24, 75];
 // Les photos supprimées de « Photos à trier » avant cette date sont réaffichées.
 window.BIBLIOTHEQUE_DEPUIS = "2026-10-14T13:30:00Z";
 // Ordre de la pellicule « Cookie » du téléphone, de la plus ancienne à la plus récente (n° des photos).
-// n° des enseignes affichées tout en bas de la liste, dans cet ordre
-window.TOUT_EN_BAS = [18, 5, 2, 82];
+// Enseignes affichées tout en bas de la liste, dans cet ordre (par id, car les n° changent quand on renumérote) :
+// Crous de l'ENS, Pin Pan, Cookie Chabot, Cookillardet V1
+window.TOUT_EN_BAS = [
+  "a1db8a0f-b592-4b25-9619-9e3842373623",
+  "01c467a2-9220-46ba-8fb1-2aceabc70545",
+  "af3b89c2-791e-4e98-8c93-9c3f2f6fb140",
+  "4ea4aee6-6518-415b-bd11-ea9499bd12b9"
+];
 window.ORDRE_TELEPHONE = [82, 83, 43, 44, 84, 85, 86, 45, 46, 87, 40, 47, 64, 41, 48, 66, 67, 68, 69, 88, 60, 89, 76, 42, 61, 77, 90, 78, 79, 80, 81, 65, 70, 71, 109, 72, 73, 74, 110, 49, 50, 91, 92, 93, 94, 95, 96, 97, 62, 63, 51, 52, 53, 54, 108, 55, 56, 57, 58, 59, 36, 37, 38, 39, 34, 35, 31, 32, 33, 107, 23, 25, 26, 27, 28, 29, 30, 104, 105, 14, 15, 16, 106, 17, 18, 19, 20, 21, 22, 11, 103, 8, 9, 10, 5, 6, 7, 1, 2, 3, 4, 99, 100, 101, 102, 98];
 
 window.ANCIENS_AVIS = [
