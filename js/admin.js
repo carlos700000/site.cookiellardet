@@ -1,6 +1,6 @@
 // Espace auteur : connexion, ajout / modification des avis, photothèque, modération.
 (function () {
-  const { sb, configured, el, ratingBar, ratingTone, fmtRating, timeAgo, toast, legacyPhotoUrl } = window.CK;
+  const { sb, configured, cookiesOf, cookieCount, plural, el, ratingBar, ratingTone, fmtRating, timeAgo, toast, legacyPhotoUrl } = window.CK;
   const app = document.getElementById("app");
   const topActions = document.getElementById("topActions");
   const photoFile = document.getElementById("photoFile");
@@ -29,7 +29,10 @@
       const { id, ...fields } = row;
       const q = id ? sb.from("reviews").update(fields).eq("id", id) : sb.from("reviews").insert(fields);
       const { data, error } = await q.select("*, comments(count)").single();
-      if (error) throw error;
+      if (error) {
+        if (/cookies/.test(error.message)) throw new Error("Exécute d'abord la mise à jour de supabase/schema.sql dans Supabase (colonne « cookies »).");
+        throw error;
+      }
       return data;
     },
     async deleteReview(id) {
@@ -110,7 +113,8 @@
   let user = null;
 
   const legacyUrls = Array.from({ length: window.ANCIENNES_PHOTOS || 0 }, (_, i) => legacyPhotoUrl(i + 1));
-  const usedPhotos = () => new Map(reviews.filter(r => r.photo_url).map(r => [r.photo_url, r]));
+  const usedPhotos = () => new Map(reviews.flatMap(r =>
+    [r.photo_url, ...cookiesOf(r).map(c => c.photo_url)].filter(Boolean).map(u => [u, r])));
   const unusedLegacy = () => { const used = usedPhotos(); return legacyUrls.filter(u => !used.has(u) && !hidden.has(u)); };
   const nextNum = () => reviews.reduce((m, r) => Math.max(m, r.num || 0), 0) + 1;
 
@@ -183,7 +187,7 @@
   function renderDashboard() {
     const unused = unusedLegacy().length;
     const tabs = [
-      ["avis", "Mes avis", reviews.length],
+      ["avis", "Mes enseignes", reviews.length],
       ["photos", "Photos à trier", unused],
       ["commentaires", "Commentaires", comments.length]
     ];
@@ -196,7 +200,7 @@
     app.replaceChildren(
       el("button", { class: "big-add", onclick: () => openEditor() },
         el("span", { class: "plus", text: "+" }),
-        el("span", {}, el("b", { text: "Nouvel avis" }), el("span", { text: "Photo, note, commentaire : publié en 1 minute." }))
+        el("span", {}, el("b", { text: "Nouvelle enseigne" }), el("span", { text: "Photos des cookies, notes, avis : publié en 1 minute." }))
       ),
       tabBar,
       body
@@ -206,7 +210,9 @@
 
   // ── Onglet : mes avis ──
   function viewReviews() {
-    const wrap = el("div", { class: "stack" });
+    const cookies = reviews.reduce((s, r) => s + cookieCount(r), 0);
+    const wrap = el("div", { class: "stack" },
+      reviews.length ? el("p", { class: "lead", style: "margin:0", text: plural(reviews.length, "enseigne testée", "enseignes testées") + " · " + plural(cookies, "cookie goûté", "cookies goûtés") }) : null);
 
     if (!reviews.length) {
       const legacyCount = (window.ANCIENS_AVIS || []).length;
@@ -289,6 +295,7 @@
         el("b", { text: "N° " + r.num + " · " + r.title }),
         el("div", { class: "row-sub" },
           r.rating != null ? el("span", { text: fmtRating(r.rating) + " / 5" }) : el("span", { text: "sans note" }),
+          el("span", { text: "🍪 " + cookieCount(r) }),
           n ? el("span", { text: "💬 " + n }) : null,
           !r.published ? el("span", { class: "pill pill-draft", text: "brouillon" }) : null,
           !r.photo_url ? el("span", { class: "pill pill-warn", text: "pas de photo" }) : null
@@ -334,33 +341,34 @@
   }
 
   function sortPhoto(url) {
-    const noPhoto = reviews.filter(r => !r.photo_url).sort((a, b) => a.num - b.num);
+    const choices = reviews.slice().sort((a, b) => (a.photo_url ? 1 : 0) - (b.photo_url ? 1 : 0) || a.num - b.num);
     const select = el("select", { class: "select" },
-      el("option", { value: "", text: noPhoto.length ? "Choisir un avis sans photo…" : "Aucun avis sans photo" }),
-      noPhoto.map(r => el("option", { value: r.id, text: "N° " + r.num + " · " + r.title + (r.rating != null ? " (" + fmtRating(r.rating) + ")" : "") }))
+      el("option", { value: "", text: "Choisir une enseigne…" }),
+      choices.map(r => el("option", { value: r.id, text: "N° " + r.num + " · " + r.title + (r.rating != null ? " (" + fmtRating(r.rating) + ")" : "") + (r.photo_url ? " · " + plural(cookieCount(r), "cookie", "cookies") : " · sans photo") }))
     );
     const preview = el("p", { class: "review-text", style: "font-size:.92rem;color:var(--text-soft)" });
     select.addEventListener("change", () => {
       const r = reviews.find(x => x.id === select.value);
       preview.textContent = r ? r.body : "";
     });
-    const assign = el("button", { class: "btn btn-primary", text: "Associer à cet avis" });
+    const assign = el("button", { class: "btn btn-primary", text: "Ajouter à cette enseigne" });
     const m = modal(el("div", { class: "stack" },
       el("img", { src: url, alt: "", style: "max-height:50vh;margin:0 auto;border-radius:12px" }),
-      el("label", { class: "field" }, el("span", { text: "Associer à un avis existant" }), select),
+      el("label", { class: "field" }, el("span", { text: "Ajouter comme cookie d'une enseigne" }), select),
       preview,
       el("div", { class: "editor-foot" },
-        el("button", { class: "btn btn-ghost", onclick: () => { m.close(); openEditor(null, url); } }, "＋ Nouvel avis avec cette photo"),
+        el("button", { class: "btn btn-ghost", onclick: () => { m.close(); openEditor(null, url); } }, "＋ Nouvelle enseigne avec cette photo"),
         assign),
       el("div", { class: "editor-foot", style: "justify-content:center" },
         el("button", { class: "btn btn-danger btn-sm", onclick: () => deletePhoto(url, () => m.close()) }, "🗑 Supprimer cette photo"))
     ), "picker-sheet");
     assign.addEventListener("click", async () => {
       const r = reviews.find(x => x.id === select.value);
-      if (!r) { toast("Choisis d'abord un avis.", "error"); return; }
+      if (!r) { toast("Choisis d'abord une enseigne.", "error"); return; }
       assign.disabled = true;
       try {
-        const saved = await api.saveReview({ id: r.id, photo_url: url });
+        const cookies = [...cookiesOf(r), { photo_url: url, name: null, rating: null, body: "" }];
+        const saved = await api.saveReview({ id: r.id, photo_url: cookies[0].photo_url, cookies });
         Object.assign(r, saved);
         m.close();
         toast("Photo associée au n° " + r.num + " !");
@@ -395,47 +403,71 @@
   // ════════════════════════════════════════════════════════════
   function openEditor(review, presetPhoto) {
     const isNew = !review;
-    const r = review || { num: nextNum(), title: "", place: "", rating: 3.5, body: "", photo_url: presetPhoto || null, tasted_on: new Date().toISOString().slice(0, 10), published: true };
-    let photo = r.photo_url ? { url: r.photo_url } : null; // { url } ou { blob, url }
+    const r = review || { num: nextNum(), title: "", place: "", rating: 3.5, body: "", photo_url: null, tasted_on: new Date().toISOString().slice(0, 10), published: true };
     let dirty = false;
     const touch = () => { dirty = true; };
 
-    // Photo
-    const drop = el("div", { class: "photo-drop" });
-    const drawPhoto = () => {
-      drop.classList.toggle("has-photo", !!photo);
-      drop.replaceChildren(photo
-        ? el("img", { src: photo.url, alt: "Photo du cookie" })
-        : el("div", {}, el("div", { class: "ph-icon", text: "📸" }), el("p", { style: "margin:6px 0 0;color:var(--text-soft)", text: "Prends ton cookie en photo ou glisse une image ici" })));
-    };
-    drawPhoto();
-    const setFile = async file => {
-      if (!file || !file.type.startsWith("image/")) return;
-      try {
-        const blob = await resizeImage(file);
-        photo = { blob, url: URL.createObjectURL(blob) };
-        touch(); drawPhoto();
-      } catch { toast("Impossible de lire cette image.", "error"); }
-    };
-    drop.addEventListener("dragover", e => { e.preventDefault(); drop.classList.add("dragover"); });
-    drop.addEventListener("dragleave", () => drop.classList.remove("dragover"));
-    drop.addEventListener("drop", e => { e.preventDefault(); drop.classList.remove("dragover"); setFile(e.dataTransfer.files[0]); });
+    // Cookies testés : { photo: { url } | { blob, url } | null, name, rating, body }
+    const cookies = cookiesOf(r).map(c => ({ photo: c.photo_url ? { url: c.photo_url } : null, name: c.name || "", rating: c.rating ?? null, body: c.body || "" }));
+    const blankCookie = () => ({ photo: null, name: "", rating: 3.5, body: "" });
+    if (!cookies.length) cookies.push(presetPhoto ? { ...blankCookie(), photo: { url: presetPhoto } } : blankCookie());
+    const cookieBox = el("div", { class: "stack" });
+    const drawCookies = () => cookieBox.replaceChildren(...cookies.map((c, i) => cookieEditor(c, i)));
 
-    const pickFile = () => {
-      photoFile.value = "";
-      photoFile.onchange = () => setFile(photoFile.files[0]);
-      photoFile.click();
-    };
-    const photoCol = el("div", {},
-      drop,
-      el("div", { class: "photo-actions" },
-        el("button", { class: "btn btn-primary", type: "button", onclick: pickFile }, "📷 ", photo ? "Changer la photo" : "Ajouter une photo"),
-        el("button", { class: "btn btn-ghost", type: "button", onclick: () => pickLegacy(url => { photo = { url }; touch(); drawPhoto(); }, r) }, "🗂 Anciennes photos"),
-        el("button", { class: "btn btn-ghost btn-icon", type: "button", title: "Retirer la photo", "aria-label": "Retirer la photo", onclick: () => { photo = null; touch(); drawPhoto(); } }, "✕")
-      )
-    );
+    function cookieEditor(c, i) {
+      const drop = el("div", { class: "photo-drop" });
+      const drawPhoto = () => {
+        drop.classList.toggle("has-photo", !!c.photo);
+        drop.replaceChildren(c.photo
+          ? el("img", { src: c.photo.url, alt: "Photo du cookie" })
+          : el("div", {}, el("div", { class: "ph-icon", text: "📸" }), el("p", { style: "margin:6px 0 0;color:var(--text-soft)", text: "Prends ce cookie en photo ou glisse une image ici" })));
+      };
+      drawPhoto();
+      const setFile = async file => {
+        if (!file || !file.type.startsWith("image/")) return;
+        try {
+          const blob = await resizeImage(file);
+          c.photo = { blob, url: URL.createObjectURL(blob) };
+          touch(); drawPhoto();
+        } catch { toast("Impossible de lire cette image.", "error"); }
+      };
+      drop.addEventListener("dragover", e => { e.preventDefault(); drop.classList.add("dragover"); });
+      drop.addEventListener("dragleave", () => drop.classList.remove("dragover"));
+      drop.addEventListener("drop", e => { e.preventDefault(); drop.classList.remove("dragover"); setFile(e.dataTransfer.files[0]); });
+      const pickFile = () => {
+        photoFile.value = "";
+        photoFile.onchange = () => setFile(photoFile.files[0]);
+        photoFile.click();
+      };
 
-    // Champs
+      const name = el("input", { class: "input", maxlength: "120", placeholder: "Ex. : triple chocolat (facultatif)", oninput: () => { c.name = name.value; touch(); } });
+      name.value = c.name;
+      const body = el("textarea", { class: "textarea", rows: "3", maxlength: "2000", placeholder: "Ton avis sur ce cookie…", oninput: () => { c.body = body.value; touch(); } });
+      body.value = c.body;
+      const picker = ratingPicker(c.rating, c.rating == null, v => { c.rating = v; touch(); });
+
+      return el("div", { class: "cookie-edit" },
+        el("div", { class: "cookie-edit-head" },
+          el("b", { text: "Cookie n° " + (i + 1) }),
+          cookies.length > 1 && el("button", { class: "btn btn-danger btn-sm", type: "button", onclick: () => { cookies.splice(i, 1); touch(); drawCookies(); } }, "🗑 Retirer ce cookie")),
+        el("div", { class: "editor" },
+          el("div", {},
+            drop,
+            el("div", { class: "photo-actions" },
+              el("button", { class: "btn btn-primary", type: "button", onclick: pickFile }, "📷 ", c.photo ? "Changer" : "Photo"),
+              el("button", { class: "btn btn-ghost", type: "button", onclick: () => pickLegacy(url => { c.photo = { url }; touch(); drawPhoto(); }, r) }, "🗂 Anciennes"),
+              el("button", { class: "btn btn-ghost btn-icon", type: "button", title: "Retirer la photo", "aria-label": "Retirer la photo", onclick: () => { c.photo = null; touch(); drawPhoto(); } }, "✕")
+            )),
+          el("div", { class: "stack" },
+            el("label", { class: "field" }, el("span", { text: "Quel cookie ?" }), name),
+            el("div", { class: "field" }, el("span", { text: "Note de ce cookie" }), picker.node),
+            el("label", { class: "field" }, el("span", { text: "Avis sur ce cookie" }), body))
+        )
+      );
+    }
+    drawCookies();
+
+    // Champs de l'enseigne
     const title = el("input", { class: "input", required: true, maxlength: "120", placeholder: "Ex. : Boulangerie Dupont", oninput: touch });
     title.value = r.title;
     const place = el("input", { class: "input", maxlength: "200", placeholder: "Adresse ou ville (facultatif)", oninput: touch });
@@ -444,32 +476,13 @@
     date.value = r.tasted_on || "";
     const num = el("input", { class: "input", type: "number", min: "1", step: "1", required: true, oninput: touch });
     num.value = r.num;
-    const body = el("textarea", { class: "textarea", rows: "8", maxlength: "5000", placeholder: "Texture, goût, taille, rapport qualité-prix, anecdote…", oninput: touch });
+    const body = el("textarea", { class: "textarea", rows: "6", maxlength: "5000", placeholder: "Accueil, choix, prix, ambiance, verdict général…", oninput: touch });
     body.value = r.body || "";
     const published = el("input", { type: "checkbox", onchange: touch });
     published.checked = r.published !== false;
 
-    // Note
-    const range = el("input", { type: "range", min: "0", max: "5", step: "0.1", "aria-label": "Note sur 5" });
-    range.value = r.rating ?? 3.5;
-    const noRating = el("input", { type: "checkbox" });
-    noRating.checked = r.rating == null && !isNew;
-    const value = el("div", { class: "rp-value" });
-    const picker = el("div", { class: "rating-picker" },
-      el("div", { class: "rp-head" }, value, el("label", { class: "check" }, noRating, "Pas de note")),
-      range,
-      el("div", { class: "rp-scale" }, el("span", { text: "0 · immangeable" }), el("span", { text: "2,5" }), el("span", { text: "5 · parfait" }))
-    );
-    const drawRating = () => {
-      const off = noRating.checked;
-      picker.classList.toggle("off", off);
-      range.disabled = off;
-      picker.dataset.tone = off ? "none" : ratingTone(Number(range.value));
-      value.replaceChildren(off ? "–" : fmtRating(Number(range.value)), el("small", { text: " / 5" }));
-    };
-    range.addEventListener("input", () => { touch(); drawRating(); });
-    noRating.addEventListener("change", () => { touch(); drawRating(); });
-    drawRating();
+    let rating = r.rating ?? null;
+    const globalPicker = ratingPicker(r.rating, r.rating == null, v => { rating = v; touch(); });
 
     const save = el("button", { class: "btn btn-primary", type: "submit", text: isNew ? "Publier l'avis" : "Enregistrer" });
     published.addEventListener("change", () => { if (isNew) save.textContent = published.checked ? "Publier l'avis" : "Enregistrer le brouillon"; });
@@ -482,21 +495,24 @@
     const form = el("form", { class: "panel stack" },
       el("div", { class: "editor-foot" },
         el("button", { class: "btn btn-ghost btn-sm", type: "button", onclick: back, text: "← Retour" }),
-        el("h2", { text: isNew ? "Nouvel avis" : "Modifier le n° " + r.num, style: "margin:0" })
+        el("h2", { text: isNew ? "Nouvelle enseigne" : "Modifier le n° " + r.num, style: "margin:0" })
       ),
-      el("div", { class: "editor" },
-        photoCol,
-        el("div", { class: "stack" },
-          el("label", { class: "field" }, el("span", { text: "Nom du cookie / de la boutique" }), title),
-          el("label", { class: "field" }, el("span", { text: "Où ?" }), place),
-          el("div", { class: "field" }, el("span", { text: "Note" }), picker),
-          el("label", { class: "field" }, el("span", { text: "Ton avis" }), body),
-          el("div", { class: "two" },
-            el("label", { class: "field" }, el("span", { text: "Goûté le" }), date),
-            el("label", { class: "field" }, el("span", { text: "Numéro du cookie" }), num)),
-          el("label", { class: "check" }, published, "Visible sur le site (décoche pour garder en brouillon)")
-        )
-      ),
+      el("div", { class: "two" },
+        el("label", { class: "field" }, el("span", { text: "Nom de l'enseigne / de la boutique" }), title),
+        el("label", { class: "field" }, el("span", { text: "Où ?" }), place)),
+      el("div", { class: "field" }, el("span", { text: "Note globale de l'enseigne" }), globalPicker.node),
+      el("label", { class: "field" }, el("span", { text: "Ton avis sur l'enseigne" }), body),
+      el("h3", { class: "editor-sub", text: "Les cookies goûtés" }),
+      cookieBox,
+      el("div", {}, el("button", { class: "btn btn-ghost", type: "button", onclick: () => {
+        cookies.push(blankCookie());
+        touch(); drawCookies();
+        cookieBox.lastElementChild.scrollIntoView({ behavior: "smooth", block: "start" });
+      } }, "＋ Ajouter un cookie")),
+      el("div", { class: "two" },
+        el("label", { class: "field" }, el("span", { text: "Goûté le" }), date),
+        el("label", { class: "field" }, el("span", { text: "Numéro" }), num)),
+      el("label", { class: "check" }, published, "Visible sur le site (décoche pour garder en brouillon)"),
       el("div", { class: "editor-foot" },
         !isNew ? el("button", { class: "btn btn-danger", type: "button", onclick: () => removeReview(r) }, "🗑 Supprimer") : el("span"),
         el("div", { class: "right" }, save)
@@ -505,20 +521,33 @@
 
     form.addEventListener("submit", async e => {
       e.preventDefault();
-      if (!title.value.trim()) { toast("Donne un nom à ce cookie.", "error"); title.focus(); return; }
+      if (!title.value.trim()) { toast("Donne un nom à cette enseigne.", "error"); title.focus(); return; }
       save.disabled = true;
       const label = save.textContent;
       try {
-        let photoUrl = photo ? photo.url : null;
-        if (photo && photo.blob) { save.textContent = "Envoi de la photo…"; photoUrl = await api.uploadPhoto(photo.blob); }
+        // On ne garde que les cookies remplis (au moins une photo, un nom ou un avis)
+        const kept = cookies.filter(c => c.photo || c.name.trim() || c.body.trim());
+        const toUpload = kept.filter(c => c.photo && c.photo.blob);
+        for (const [i, c] of toUpload.entries()) {
+          save.textContent = "Envoi des photos… " + (i + 1) + "/" + toUpload.length;
+          c.photo = { url: await api.uploadPhoto(c.photo.blob) };
+        }
         save.textContent = "Enregistrement…";
+        const savedCookies = kept.map(c => ({
+          photo_url: c.photo ? c.photo.url : null,
+          name: c.name.trim() || null,
+          rating: c.rating == null ? null : Math.round(Number(c.rating) * 10) / 10,
+          body: c.body.trim()
+        }));
+        const cover = savedCookies.find(c => c.photo_url);
         const row = {
           num: parseInt(num.value, 10) || nextNum(),
           title: title.value.trim(),
           place: place.value.trim() || null,
-          rating: noRating.checked ? null : Math.round(Number(range.value) * 10) / 10,
+          rating: rating == null ? null : Math.round(Number(rating) * 10) / 10,
           body: body.value.trim(),
-          photo_url: photoUrl,
+          photo_url: cover ? cover.photo_url : null,
+          cookies: savedCookies,
           tasted_on: date.value || null,
           published: published.checked
         };
@@ -538,7 +567,33 @@
 
     app.replaceChildren(form);
     window.scrollTo(0, 0);
-    if (isNew && !photo) title.focus({ preventScroll: true });
+    if (isNew && !presetPhoto) title.focus({ preventScroll: true });
+  }
+
+  // Curseur de note sur 5 avec case « Pas de note ». onChange(null | nombre)
+  function ratingPicker(initial, none, onChange) {
+    const range = el("input", { type: "range", min: "0", max: "5", step: "0.1", "aria-label": "Note sur 5" });
+    range.value = initial ?? 3.5;
+    const noRating = el("input", { type: "checkbox" });
+    noRating.checked = none;
+    const value = el("div", { class: "rp-value" });
+    const node = el("div", { class: "rating-picker" },
+      el("div", { class: "rp-head" }, value, el("label", { class: "check" }, noRating, "Pas de note")),
+      range,
+      el("div", { class: "rp-scale" }, el("span", { text: "0 · immangeable" }), el("span", { text: "2,5" }), el("span", { text: "5 · parfait" }))
+    );
+    const draw = () => {
+      const off = noRating.checked;
+      node.classList.toggle("off", off);
+      range.disabled = off;
+      node.dataset.tone = off ? "none" : ratingTone(Number(range.value));
+      value.replaceChildren(off ? "–" : fmtRating(Number(range.value)), el("small", { text: " / 5" }));
+    };
+    const changed = () => { draw(); onChange(noRating.checked ? null : Number(range.value)); };
+    range.addEventListener("input", changed);
+    noRating.addEventListener("change", changed);
+    draw();
+    return { node };
   }
 
   async function removeReview(r) {

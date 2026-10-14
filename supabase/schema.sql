@@ -35,6 +35,13 @@ create table if not exists public.reviews (
   created_at  timestamptz not null default now()
 );
 create index if not exists reviews_num_idx on public.reviews (num desc);
+
+-- Un avis = une enseigne. `rating` / `body` = note et avis global de l'enseigne,
+-- `cookies` = les cookies testés là-bas : [{ photo_url, name, rating, body }, …].
+-- `photo_url` reste la photo de couverture (= photo du 1er cookie).
+alter table public.reviews add column if not exists cookies jsonb not null default '[]'::jsonb;
+alter table public.reviews drop constraint if exists reviews_cookies_array;
+alter table public.reviews add constraint reviews_cookies_array check (jsonb_typeof(cookies) = 'array');
 alter table public.reviews enable row level security;
 
 drop policy if exists "tout le monde lit les avis publiés" on public.reviews;
