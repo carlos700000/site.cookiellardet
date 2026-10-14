@@ -47,7 +47,10 @@
   }
   // Une enseigne est aussi récente que sa photo de cookie la plus récente
   const recency = r => Math.max(photoRank(r.photo_url), ...cookiesOf(r).map(c => photoRank(c.photo_url)));
-  const byRecent = (a, b) => recency(b) - recency(a) || String(b.created_at || "").localeCompare(String(a.created_at || "")) || b.num - a.num;
+  // enseignes forcées tout en bas, dans l'ordre de TOUT_EN_BAS
+  const bas = window.TOUT_EN_BAS || [];
+  const basRank = r => bas.indexOf(r.num);
+  const byRecent = (a, b) => basRank(a) - basRank(b) || recency(b) - recency(a) || String(b.created_at || "").localeCompare(String(a.created_at || "")) || b.num - a.num;
   const plural = (n, one, many) => n + " " + (n > 1 ? many : one);
 
   function el(tag, attrs, ...children) {
