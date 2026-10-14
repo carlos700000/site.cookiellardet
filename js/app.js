@@ -31,17 +31,11 @@
 
   // ── Statistiques & podium ──
   function renderStats() {
-    const rated = reviews.filter(r => r.rating != null);
-    const avg = rated.length ? rated.reduce((s, r) => s + Number(r.rating), 0) / rated.length : null;
-    const comments = reviews.reduce((s, r) => s + commentCount(r), 0);
     const cookies = reviews.reduce((s, r) => s + cookieCount(r), 0);
     const items = [
       [reviews.length, reviews.length > 1 ? "enseignes testées" : "enseigne testée"],
       [cookies, cookies > 1 ? "cookies goûtés" : "cookie goûté"],
-      [avg == null ? "–" : fmtRating(Math.round(avg * 10) / 10), "note moyenne"],
-      [rated.filter(r => r.rating >= 4.5).length, "high level"],
     ];
-    if (configured) items.push([comments, "commentaires"]);
     $("stats").replaceChildren(...items.map(([v, l]) => el("div", { class: "stat" }, el("b", { text: v }), el("span", { text: l }))));
   }
 
