@@ -98,19 +98,19 @@
     showCoverageOnHover: false,
     maxClusterRadius: 45,
     iconCreateFunction: c => L.divIcon({
-      html: "<span>" + c.getChildCount() + "</span>", className: "cookie-cluster", iconSize: [42, 42]
+      html: "<span>" + c.getChildCount() + "</span>", className: "cookie-cluster", iconSize: [40, 40]
     })
   });
   map.addLayer(cluster);
 
-  // Plusieurs enseignes au même endroit → un seul repère avec toutes les fiches
+  // Plusieurs enseignes au même endroit : un seul repère avec toutes les fiches
   const spots = new Map();
   function pinIcon(reviews) {
     const rated = reviews.filter(r => r.rating != null);
     const avg = rated.length ? rated.reduce((s, r) => s + Number(r.rating), 0) / rated.length : null;
     return L.divIcon({
-      html: '<span data-tone="' + ratingTone(avg) + '">🍪</span>',
-      className: "cookie-pin", iconSize: [34, 34], iconAnchor: [17, 17], popupAnchor: [0, -14]
+      html: '<span data-tone="' + ratingTone(avg) + '"></span>',
+      className: "cookie-pin", iconSize: [20, 20], iconAnchor: [10, 10], popupAnchor: [0, -8]
     });
   }
   function popupFor(reviews) {

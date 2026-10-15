@@ -146,7 +146,7 @@
     const pass = el("input", { class: "input", type: "password", required: !api.demo, autocomplete: "current-password" });
     const btn = el("button", { class: "btn btn-primary", type: "submit", text: api.demo ? "Entrer en mode démo" : "Se connecter" });
     const form = el("form", { class: "panel narrow stack" },
-      el("div", {}, el("h2", { text: "Bonjour chef 🍪" }), el("p", { class: "lead", text: "Connecte-toi pour publier tes avis." })),
+      el("div", {}, el("h2", { text: "Bonjour chef" }), el("p", { class: "lead", text: "Connecte-toi pour publier tes avis." })),
       api.demo && el("div", { class: "notice" },
         "Mode démo : Supabase n'est pas encore configuré (voir ", el("code", { text: "LISEZMOI.md" }),
         "). Tu peux tout essayer, mais rien ne sera enregistré."),
@@ -258,7 +258,7 @@
         } catch (err) { toast("Erreur : " + err.message, "error"); btn.disabled = false; btn.textContent = "Réessayer"; }
       });
       wrap.append(el("div", { class: "notice stack" },
-        el("b", { text: "🔢 Numéros dans l'ordre de la liste" }),
+        el("b", { text: "Numéros dans l'ordre de la liste" }),
         el("span", { text: "Sans changer l'ordre, l'enseigne tout en bas devient le n° 1 et celle tout en haut le n° " + ordered.length + "." }),
         el("div", {}, btn)));
     }
@@ -290,19 +290,19 @@
   function reviewRow(r) {
     const n = r.comments && r.comments[0] ? r.comments[0].count : 0;
     return el("div", { class: "row-item", "data-tone": ratingTone(r.rating) },
-      el("div", { class: "row-thumb" }, r.photo_url ? el("img", { src: r.photo_url, alt: "", loading: "lazy" }) : "🍪"),
+      el("div", { class: "row-thumb" }, r.photo_url ? el("img", { src: r.photo_url, alt: "", loading: "lazy" }) : null),
       el("div", { class: "row-main" },
         el("b", { text: "N° " + r.num + " · " + r.title }),
         el("div", { class: "row-sub" },
           r.rating != null ? el("span", { text: fmtRating(r.rating) + " / 5" }) : el("span", { text: "sans note" }),
-          el("span", { text: "🍪 " + cookieCount(r) }),
-          n ? el("span", { text: "💬 " + n }) : null,
+          el("span", { text: plural(cookieCount(r), "cookie", "cookies") }),
+          n ? el("span", { text: plural(n, "commentaire", "commentaires") }) : null,
           !r.published ? el("span", { class: "pill pill-draft", text: "brouillon" }) : null,
           !r.photo_url ? el("span", { class: "pill pill-warn", text: "pas de photo" }) : null
         )
       ),
       el("div", { class: "row-actions" },
-        el("button", { class: "btn btn-ghost btn-sm", onclick: () => openEditor(r), "aria-label": "Modifier" }, "✏️", el("span", { class: "btn-label", text: " Modifier" }))
+        el("button", { class: "btn btn-ghost btn-sm", onclick: () => openEditor(r), "aria-label": "Modifier" }, "Modifier")
       )
     );
   }
@@ -314,16 +314,16 @@
       return el("div", { class: "panel" }, el("p", { class: "lead", text: "Importe d'abord les anciens avis (onglet « Mes avis »)." }));
     }
     if (!unused.length) {
-      return el("div", { class: "panel" }, el("h2", { text: "Tout est trié 🎉" }), el("p", { class: "lead", text: "Toutes les anciennes photos sont associées à un avis." }));
+      return el("div", { class: "panel" }, el("h2", { text: "Tout est trié" }), el("p", { class: "lead", text: "Toutes les anciennes photos sont associées à un avis." }));
     }
     return el("div", { class: "stack" },
-      el("p", { class: "lead", text: "Ces anciennes photos n'ont pas encore d'avis. Touche une photo pour l'associer à un avis existant ou créer un nouvel avis. La 🗑 retire une photo dont tu ne veux pas." }),
+      el("p", { class: "lead", text: "Ces anciennes photos n'ont pas encore d'avis. Touche une photo pour l'associer à un avis existant ou créer un nouvel avis. La croix retire une photo dont tu ne veux pas." }),
       el("div", { class: "photo-grid" }, unused.map(url =>
         el("div", { class: "photo-cell" },
           el("button", { class: "photo-tile", onclick: () => sortPhoto(url) },
             el("img", { src: url, alt: "", loading: "lazy" }),
             el("span", { class: "tag", text: "#" + url.match(/(\d+)\.jpg$/)[1] })),
-          el("button", { class: "photo-del", title: "Supprimer cette photo", "aria-label": "Supprimer cette photo", onclick: () => deletePhoto(url) }, "🗑"))
+          el("button", { class: "photo-del", title: "Supprimer cette photo", "aria-label": "Supprimer cette photo", onclick: () => deletePhoto(url) }, "×"))
       ))
     );
   }
@@ -360,7 +360,7 @@
         el("button", { class: "btn btn-ghost", onclick: () => { m.close(); openEditor(null, url); } }, "＋ Nouvelle enseigne avec cette photo"),
         assign),
       el("div", { class: "editor-foot", style: "justify-content:center" },
-        el("button", { class: "btn btn-danger btn-sm", onclick: () => deletePhoto(url, () => m.close()) }, "🗑 Supprimer cette photo"))
+        el("button", { class: "btn btn-danger btn-sm", onclick: () => deletePhoto(url, () => m.close()) }, "Supprimer cette photo"))
     ), "picker-sheet");
     assign.addEventListener("click", async () => {
       const r = reviews.find(x => x.id === select.value);
@@ -393,7 +393,7 @@
           if (!(await confirmBox("Supprimer ce commentaire de " + c.pseudo + " ?", "Supprimer"))) return;
           try { await api.deleteComment(c.id); comments = comments.filter(x => x.id !== c.id); renderDashboard(); toast("Commentaire supprimé."); }
           catch (err) { toast(err.message, "error"); }
-        } }, "🗑")
+        } }, "×")
       )
     ));
   }
@@ -420,7 +420,7 @@
         drop.classList.toggle("has-photo", !!c.photo);
         drop.replaceChildren(c.photo
           ? el("img", { src: c.photo.url, alt: "Photo du cookie" })
-          : el("div", {}, el("div", { class: "ph-icon", text: "📸" }), el("p", { style: "margin:6px 0 0;color:var(--text-soft)", text: "Prends ce cookie en photo ou glisse une image ici" })));
+          : el("div", {}, el("p", { style: "margin:6px 0 0;color:var(--text-soft)", text: "Prends ce cookie en photo ou glisse une image ici" })));
       };
       drawPhoto();
       const setFile = async file => {
@@ -449,14 +449,14 @@
       return el("div", { class: "cookie-edit" },
         el("div", { class: "cookie-edit-head" },
           el("b", { text: "Cookie n° " + (i + 1) }),
-          cookies.length > 1 && el("button", { class: "btn btn-danger btn-sm", type: "button", onclick: () => { cookies.splice(i, 1); touch(); drawCookies(); } }, "🗑 Retirer ce cookie")),
+          cookies.length > 1 && el("button", { class: "btn btn-danger btn-sm", type: "button", onclick: () => { cookies.splice(i, 1); touch(); drawCookies(); } }, "Retirer ce cookie")),
         el("div", { class: "editor" },
           el("div", {},
             drop,
             el("div", { class: "photo-actions" },
-              el("button", { class: "btn btn-primary", type: "button", onclick: pickFile }, "📷 ", c.photo ? "Changer" : "Photo"),
-              el("button", { class: "btn btn-ghost", type: "button", onclick: () => pickLegacy(url => { c.photo = { url }; touch(); drawPhoto(); }, r) }, "🗂 Anciennes"),
-              el("button", { class: "btn btn-ghost btn-icon", type: "button", title: "Retirer la photo", "aria-label": "Retirer la photo", onclick: () => { c.photo = null; touch(); drawPhoto(); } }, "✕")
+              el("button", { class: "btn btn-primary", type: "button", onclick: pickFile }, c.photo ? "Changer" : "Photo"),
+              el("button", { class: "btn btn-ghost", type: "button", onclick: () => pickLegacy(url => { c.photo = { url }; touch(); drawPhoto(); }, r) }, "Anciennes"),
+              el("button", { class: "btn btn-ghost btn-icon", type: "button", title: "Retirer la photo", "aria-label": "Retirer la photo", onclick: () => { c.photo = null; touch(); drawPhoto(); } }, "×")
             )),
           el("div", { class: "stack" },
             el("label", { class: "field" }, el("span", { text: "Quel cookie ?" }), name),
@@ -514,7 +514,7 @@
         el("label", { class: "field" }, el("span", { text: "Numéro" }), num)),
       el("label", { class: "check" }, published, "Visible sur le site (décoche pour garder en brouillon)"),
       el("div", { class: "editor-foot" },
-        !isNew ? el("button", { class: "btn btn-danger", type: "button", onclick: () => removeReview(r) }, "🗑 Supprimer") : el("span"),
+        !isNew ? el("button", { class: "btn btn-danger", type: "button", onclick: () => removeReview(r) }, "Supprimer") : el("span"),
         el("div", { class: "right" }, save)
       )
     );
@@ -557,7 +557,7 @@
         reviews.sort((a, b) => b.num - a.num);
         dirty = false;
         tab = "avis";
-        toast(isNew ? (row.published ? "Avis publié ! 🍪" : "Brouillon enregistré.") : "Modifications enregistrées.");
+        toast(isNew ? (row.published ? "Avis publié." : "Brouillon enregistré.") : "Modifications enregistrées.");
         renderDashboard();
       } catch (err) {
         toast("Erreur : " + err.message, "error");

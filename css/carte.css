@@ -1,32 +1,34 @@
 /* ── Page carte du monde ── */
-.map-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; margin-top: 12px; }
+.map-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-top: 12px; }
 #map { height: min(70vh, 640px); min-height: 360px; width: 100%; background: var(--surface-2); }
-.map-note { font-size: .85rem; color: var(--muted); text-align: center; margin: 12px 0 40px; }
+.map-note { font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); text-align: center; margin: 12px 0 40px; }
 
-/* Repères : un cookie entouré de la couleur de la note */
+/* Repères : un point de la couleur de la note */
 .cookie-pin { background: none; border: 0; }
 .cookie-pin span {
-  display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%;
-  background: var(--surface); border: 3px solid var(--tone, var(--accent));
-  box-shadow: 0 2px 6px rgba(0, 0, 0, .25); font-size: 18px; line-height: 1;
+  display: block; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--tone, var(--accent)); border: 3px solid var(--surface);
+  box-shadow: 0 0 0 1px var(--tone, var(--accent)), 0 2px 6px rgba(0, 0, 0, .25);
 }
 .cookie-cluster { background: none; border: 0; }
 .cookie-cluster span {
-  display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%;
-  background: var(--accent); color: var(--accent-ink); border: 3px solid var(--surface);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, .3); font-weight: 700; font-size: .95rem;
+  display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%;
+  background: var(--text); color: var(--bg); border: 3px solid var(--surface);
+  box-shadow: 0 0 0 1px var(--text), 0 2px 8px rgba(0, 0, 0, .3);
+  font-family: var(--ff-display); font-weight: 600; font-size: 1.1rem;
 }
 
 /* Bulles */
 .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--surface); color: var(--text); }
+.leaflet-popup-content-wrapper { border-radius: var(--radius); }
 .leaflet-popup-content { margin: 12px 14px; font: 14px/1.45 var(--ff-body); min-width: 180px; }
 .pop + .pop { border-top: 1px solid var(--border); margin-top: 10px; padding-top: 10px; }
-.pop-title { font-family: var(--ff-display); font-size: 1.05rem; font-weight: 700; color: var(--text); text-decoration: none; display: block; }
+.pop-title { font-family: var(--ff-display); font-size: 1.3rem; font-weight: 600; line-height: 1.15; color: var(--text); text-decoration: none; display: block; }
 .pop-title:hover { color: var(--accent); }
-.pop-place { color: var(--muted); font-size: .8rem; margin: 2px 0 6px; }
+.pop-place { color: var(--muted); font-size: .64rem; letter-spacing: .14em; text-transform: uppercase; margin: 2px 0 6px; }
 .pop-meta { display: flex; justify-content: space-between; gap: 10px; align-items: center; font-size: .85rem; }
 .pop-note { color: var(--tone); font-weight: 700; }
-.pop img { width: 100%; height: 110px; object-fit: cover; border-radius: 10px; margin-bottom: 8px; }
+.pop img { width: 100%; height: 110px; object-fit: cover; border-radius: 2px; margin-bottom: 8px; }
 .leaflet-container a.pop-title { color: var(--text); }
 .leaflet-container .pop-meta a { color: var(--accent); }
 
