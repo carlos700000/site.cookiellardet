@@ -140,7 +140,7 @@
       const x = pad.l + i * bw + 3;
       const tone = ratingTone(b.from + 0.25);
       if (b.n) {
-        g.append(svg("rect", { x, y: y(b.n), width: bw - 6, height: y(0) - y(b.n), rx: 4, class: "bar", "data-tone": tone },
+        g.append(svg("rect", { x, y: y(b.n), width: bw - 6, height: y(0) - y(b.n), rx: 1, class: "bar", "data-tone": tone },
           svg("title", {}, fmtRating(b.from) + " à " + fmtRating(b.from + 0.5) + " : " + b.n)));
         g.append(svg("text", { x: x + (bw - 6) / 2, y: y(b.n) - 5, "text-anchor": "middle", class: "val" }, String(b.n)));
       }
