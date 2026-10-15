@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Carte du monde · Cookillardet</title>
+  <meta name="description" content="Toutes les villes où un cookie a été goûté, sur un globe terrestre.">
+  <meta property="og:title" content="Cookillardet">
+  <meta property="og:description" content="Le journal de dégustation de cookies le plus impartial du monde.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%231d1915'/><text x='50' y='69' text-anchor='middle' font-family='Georgia,serif' font-size='58' fill='%23f7f3ec'>C</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+  <link rel="stylesheet" href="css/style.css?v=13">
+  <link rel="stylesheet" href="css/stats.css?v=13">
+  <link rel="stylesheet" href="css/carte.css?v=13">
+</head>
+<body>
+  <header class="wrap hero stats-hero">
+    <a class="back-link" href="index.html">← Toutes les enseignes</a>
+    <h1>Carte du monde<span class="dot">.</span></h1>
+    <p>Toutes les villes du monde où un cookie a été goûté, noté et critiqué.</p>
+    <div class="stats" id="kpis"></div>
+    <div class="demo-banner" id="demoBanner" hidden>
+      Aperçu : la base de données n'est pas encore branchée, la carte montre les anciens avis.
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="view-tabs" role="tablist" aria-label="Affichage">
+      <button class="view-tab" role="tab" data-view="globe" aria-selected="true">Globe</button>
+      <button class="view-tab" role="tab" data-view="map" aria-selected="false">Carte</button>
+    </div>
+
+    <section id="globeView" class="globe-view">
+      <div class="globe-stage">
+        <div id="globe" role="region" aria-label="Globe des villes où un cookie a été goûté"></div>
+        <p class="globe-hint">Fais tourner le globe, touche une ville pour voir ses cookies.</p>
+      </div>
+      <aside class="globe-side">
+        <h2 class="side-title">Les villes</h2>
+        <ol class="city-list" id="cityList"></ol>
+        <div class="city-panel" id="cityPanel" hidden></div>
+      </aside>
+    </section>
+
+    <section id="mapView" hidden>
+      <div class="map-card">
+        <div id="map" role="region" aria-label="Carte des cookies goûtés"></div>
+      </div>
+    </section>
+    <p class="map-note" id="mapNote"></p>
+  </main>
+
+  <footer class="site-footer wrap">
+    <span class="brand-mark">Cookillardet</span> · <a href="index.html">Accueil</a> · <a href="stats.html">Statistiques</a> · <a href="admin.html">Espace auteur</a>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/globe.gl@2.46.2/dist/globe.gl.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+  <script src="js/config.js?v=13"></script>
+  <script src="js/anciens-avis.js?v=13"></script>
+  <script src="js/common.js?v=13"></script>
+  <script src="js/carte.js?v=13"></script>
+</body>
+</html>
