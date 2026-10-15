@@ -45,7 +45,7 @@
       .sort((a, b) => b.rating - a.rating || b.num - a.num)
       .slice(0, 3);
     $("podiumSection").hidden = top.length < 3;
-    const medals = ["I", "II", "III"];
+    const medals = ["🥇", "🥈", "🥉"];
     $("podium").replaceChildren(...top.map((r, i) =>
       el("button", { class: "podium-item", onclick: () => openReview(r.id), "aria-label": r.title },
         el("img", { src: r.photo_url, alt: "", loading: "lazy" }),
@@ -74,7 +74,7 @@
 
   function photoOrPlaceholder(r) {
     if (r.photo_url) return el("img", { src: r.photo_url, alt: "Photo du cookie " + r.title, loading: "lazy" });
-    return el("div", { class: "placeholder" }, "Pas de photo");
+    return el("div", { class: "placeholder" }, el("span", { class: "ph-icon", text: "🍪" }), "Pas de photo");
   }
 
   function card(r) {
@@ -85,15 +85,15 @@
         photoOrPlaceholder(r),
         el("span", { class: "card-num", text: "N° " + r.num }),
         r.rating != null && el("span", { class: "card-score", text: fmtRating(r.rating) }),
-        nc > 1 && el("span", { class: "card-cookies", text: nc + " cookies" })
+        nc > 1 && el("span", { class: "card-cookies", text: "🍪 × " + nc })
       ),
       el("div", { class: "card-body" },
         el("h3", { text: r.title }),
-        r.place && el("div", { class: "place", text: r.place }),
+        r.place && el("div", { class: "place", text: "📍 " + r.place }),
         el("p", { class: "excerpt", text: r.body }),
         el("div", { class: "meta" },
           ratingBar(r.rating),
-          configured && el("span", { text: plural(n, "commentaire", "commentaires") })
+          configured && el("span", { text: "💬 " + n })
         )
       )
     );
@@ -144,16 +144,16 @@
     const sheet = el("article", { class: "sheet", "data-tone": ratingTone(r.rating), role: "dialog", "aria-modal": "true", "aria-label": r.title },
       el("button", { class: "sheet-close", "aria-label": "Fermer", onclick: closeReview, text: "×" }),
       el("div", { class: "sheet-photo" }, mainPhoto
-        || el("div", { class: "placeholder" }, "Pas de photo")),
+        || el("div", { class: "placeholder" }, el("span", { class: "ph-icon", text: "🍪" }), "Pas de photo")),
       el("div", { class: "sheet-body" },
         el("div", { class: "sheet-kicker", text: "N° " + r.num + " · " + plural(cookieCount(r), "cookie goûté", "cookies goûtés") + (r.tasted_on ? " · le " + fmtDate(r.tasted_on) : "") }),
         el("h2", { text: r.title }),
-        r.place && el("a", { class: "place-link", href: mapsUrl(r.place), target: "_blank", rel: "noopener" }, r.place),
+        r.place && el("a", { class: "place-link", href: mapsUrl(r.place), target: "_blank", rel: "noopener" }, "📍 ", r.place),
         el("div", { class: "verdict" }, el("span", { text: "Note de l'enseigne" }), ratingBar(r.rating, "lg")),
         el("p", { class: "review-text", text: r.body }),
         cookieList(cookies, mainPhoto),
         el("div", { class: "share" },
-          el("button", { class: "btn btn-ghost btn-sm", onclick: () => share(r) }, "Partager")),
+          el("button", { class: "btn btn-ghost btn-sm", onclick: () => share(r) }, "🔗 Partager ce cookie")),
         commentsBox
       )
     );
@@ -177,7 +177,7 @@
           ? el("button", { class: "cookie-thumb", "aria-label": "Voir la photo", onclick: () => {
               if (mainPhoto) { mainPhoto.src = c.photo_url; mainPhoto.scrollIntoView({ behavior: "smooth", block: "start" }); }
             } }, el("img", { src: c.photo_url, alt: "", loading: "lazy" }))
-          : el("div", { class: "cookie-thumb" }),
+          : el("div", { class: "cookie-thumb", text: "🍪" }),
         el("div", { class: "cookie-info" },
           el("b", { text: c.name || "Cookie n° " + (i + 1) }),
           c.rating != null && ratingBar(c.rating),
@@ -254,7 +254,7 @@
       el("label", { class: "field" }, el("span", { text: "Pseudo" }), pseudo),
       el("label", { class: "field" }, el("span", { text: "Commentaire" }), body),
       trap,
-      el("div", { class: "row" }, el("span", { class: "hint", text: "Sois gourmand, pas méchant." }), submit)
+      el("div", { class: "row" }, el("span", { class: "hint", text: "Sois gourmand, pas méchant 🍪" }), submit)
     );
 
     form.addEventListener("submit", async e => {

@@ -1,19 +1,18 @@
 /* ── Page statistiques ── */
-.stats-hero h1 { font-family: var(--ff-display); font-size: clamp(2.6rem, 8vw, 4rem); margin: 8px 0 0; line-height: 1.1; }
-.back-link { display: inline-block; font-size: .68rem; letter-spacing: .16em; text-transform: uppercase; text-decoration: none; margin-bottom: 8px; color: var(--text-soft); }
-.back-link:hover { color: var(--accent); }
+.stats-hero h1 { font-family: var(--ff-display); font-size: clamp(2.2rem, 7vw, 3.4rem); margin: 8px 0 0; line-height: 1.1; }
+.back-link { display: inline-block; font-size: .9rem; text-decoration: none; margin-bottom: 4px; }
 
 .charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); gap: 16px; padding: 12px 0 40px; }
-.chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px 22px 18px; min-width: 0; }
-.chart-card h2 { font-family: var(--ff-display); font-weight: 600; font-size: 1.6rem; margin: 0 0 4px; }
+.chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 18px 14px; box-shadow: var(--shadow); min-width: 0; }
+.chart-card h2 { font-family: var(--ff-display); font-size: 1.25rem; margin: 0 0 4px; }
 .chart-sub { margin: 0 0 10px; font-size: .85rem; color: var(--muted); }
 
 /* Barres horizontales */
 .hbars { display: grid; grid-template-columns: minmax(80px, max-content) 1fr auto; align-items: center; gap: 8px 10px; margin-top: 10px; font-size: .9rem; }
 .hbar { display: contents; }
 .hbar-label { max-width: 40vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-soft); }
-.hbar-track { height: 6px; border-radius: 0; background: var(--surface-2); overflow: hidden; }
-.hbar-fill { display: block; height: 100%; border-radius: 0; background: var(--tone, var(--accent)); min-width: 4px; }
+.hbar-track { height: 12px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
+.hbar-fill { display: block; height: 100%; border-radius: 99px; background: var(--tone, var(--accent)); min-width: 4px; }
 .hbar-fill.is-muted { background: var(--muted); opacity: .5; }
 .hbar-value { font-variant-numeric: tabular-nums; font-size: .85rem; white-space: nowrap; }
 
@@ -28,8 +27,8 @@
 
 /* Top / flop */
 .rank { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
-.rank-item { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; padding: 8px 12px; border-radius: 2px; background: var(--surface-2); color: var(--text); text-decoration: none; }
+.rank-item { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; padding: 8px 12px; border-radius: 12px; background: var(--surface-2); color: var(--text); text-decoration: none; }
 .rank-item:hover { outline: 2px solid var(--accent-soft); }
 .rank-num { font-size: .8rem; color: var(--muted); }
 .rank-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.rank-note { color: var(--tone); font-family: var(--ff-display); font-weight: 600; font-size: 1.25rem; }
+.rank-note { color: var(--tone); font-family: var(--ff-display); font-size: 1.1rem; }
