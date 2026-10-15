@@ -1,4 +1,55 @@
 /* ── Page carte du monde ── */
+/* Onglets Globe / Carte */
+.view-tabs { display: flex; justify-content: center; gap: 0; margin: 8px auto 20px; }
+.view-tab {
+  border: 1px solid var(--border); background: transparent; color: var(--text-soft); cursor: pointer;
+  padding: 10px 28px; min-height: 42px; font: 500 .72rem/1 var(--ff-body); letter-spacing: .18em; text-transform: uppercase;
+}
+.view-tab + .view-tab { border-left: 0; }
+.view-tab[aria-selected="true"] { background: var(--text); border-color: var(--text); color: var(--bg); }
+
+/* Globe */
+.globe-view { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 24px; align-items: start; }
+.globe-stage { position: relative; }
+#globe {
+  height: min(72vh, 640px); min-height: 360px; width: 100%; overflow: hidden; cursor: grab;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: radial-gradient(circle at 50% 45%, var(--surface) 0%, var(--bg) 70%);
+}
+#globe:active { cursor: grabbing; }
+.globe-hint { position: absolute; left: 0; right: 0; bottom: 10px; margin: 0; text-align: center; pointer-events: none;
+  font-size: .66rem; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+.globe-fallback { display: grid; place-items: center; height: 100%; margin: 0; padding: 24px; text-align: center; color: var(--muted); }
+.globe-tip { background: var(--surface); color: var(--text); border: 1px solid var(--border); padding: 8px 12px; border-radius: 2px; box-shadow: var(--shadow); font-family: var(--ff-body); }
+.globe-tip b { display: block; font-family: var(--ff-display); font-weight: 600; font-size: 1.2rem; line-height: 1.1; }
+.globe-tip span { font-size: .66rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+
+.side-title { font-family: var(--ff-display); font-weight: 500; font-size: 1.6rem; margin: 0 0 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.city-list { list-style: none; margin: 0; padding: 0; }
+.city-item {
+  width: 100%; display: grid; grid-template-columns: auto 1fr auto; align-items: baseline; gap: 12px;
+  padding: 10px 4px; border: 0; border-bottom: 1px solid var(--border); background: none; color: var(--text); cursor: pointer; text-align: left;
+}
+.city-item:hover .city-name, .city-item.is-active .city-name { color: var(--accent); }
+.city-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--tone, var(--accent)); transform: translateY(-2px); }
+.city-name { font-family: var(--ff-display); font-size: 1.25rem; font-weight: 500; line-height: 1.2; }
+.city-count { font-size: .66rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+
+.city-panel { margin-top: 20px; padding: 18px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+.city-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.city-head h2 { font-family: var(--ff-display); font-weight: 500; font-size: 2rem; line-height: 1; margin: 4px 0 0; }
+.city-kicker { font-size: .64rem; letter-spacing: .18em; text-transform: uppercase; color: var(--accent); }
+.city-close { border: 0; background: none; color: var(--muted); font-size: 1.5rem; line-height: 1; cursor: pointer; padding: 0 4px; }
+.city-sub { margin: 8px 0 14px; font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.city-fiches { display: grid; gap: 0; max-height: 52vh; overflow-y: auto; }
+.city-fiches .pop { font-size: .9rem; line-height: 1.45; }
+
+@media (max-width: 860px) {
+  .globe-view { grid-template-columns: minmax(0, 1fr); }
+  #globe { height: min(70vh, 460px); }
+  .city-fiches { max-height: none; }
+}
+
 .map-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-top: 12px; }
 #map { height: min(70vh, 640px); min-height: 360px; width: 100%; background: var(--surface-2); }
 .map-note { font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); text-align: center; margin: 12px 0 40px; }
