@@ -15,7 +15,7 @@
   display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%;
   background: var(--text); color: var(--bg); border: 3px solid var(--surface);
   box-shadow: 0 0 0 1px var(--text), 0 2px 8px rgba(0, 0, 0, .3);
-  font-family: var(--ff-display); font-weight: 600; font-size: 1.1rem;
+  font-family: var(--ff-display); font-weight: 600; font-size: 1.1rem; font-variant-numeric: lining-nums;
 }
 
 /* Bulles */

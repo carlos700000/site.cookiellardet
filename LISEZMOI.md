@@ -84,7 +84,7 @@ Pour l'activer sur une base déjà en place : **SQL Editor → New query** → r
 Sur le téléphone, ouvrir `admin.html` (l'ajouter à l'écran d'accueil) → **+ Nouvelle enseigne** :
 
 - nom de l'enseigne, lieu, **note globale** avec le curseur (ou « Pas de note »), avis sur l'enseigne ;
-- pour chaque cookie goûté : **📷 Photo** (appareil photo ou galerie, réduite automatiquement avant l'envoi), nom du cookie, note et avis ; **＋ Ajouter un cookie** pour en mettre plusieurs ;
+- pour chaque cookie goûté : **Photo** (appareil photo ou galerie, réduite automatiquement avant l'envoi), nom du cookie, note et avis ; **＋ Ajouter un cookie** pour en mettre plusieurs ;
 - **Publier l'avis**. C'est en ligne.
 
 Tout se modifie ensuite via **Modifier** (texte, note, photo, brouillon/visible, suppression). L'onglet **Commentaires** permet de supprimer ceux qui dépassent les bornes.
