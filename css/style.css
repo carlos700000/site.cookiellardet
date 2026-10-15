@@ -357,3 +357,4 @@ button.cookie-thumb { cursor: zoom-in; }
 }
 
 .stats-link { margin-top: 6px; }
+.hero-links { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; }
