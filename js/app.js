@@ -189,7 +189,7 @@
 
   async function share(r) {
     const url = location.origin + location.pathname + "#avis-" + r.id;
-    const text = "Cookie n°" + r.num + " : " + r.title + (r.rating != null ? " (" + fmtRating(r.rating) + "/5)" : "");
+    const text = "Cookie n° " + r.num + " : " + r.title + (r.rating != null ? " (" + fmtRating(r.rating) + "/5)" : "");
     try {
       if (navigator.share) { await navigator.share({ title: "Cookillardet", text, url }); return; }
       await navigator.clipboard.writeText(url);
